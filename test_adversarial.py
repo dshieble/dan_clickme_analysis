@@ -40,16 +40,15 @@ def test_adversarial_performance(signature):
 
 
 	tf.reset_default_graph()
-	images_meta = pd.read_csv("/media/data_cifs/danshiebler/data/adversarial/images.csv")
-	file_names =  images_meta["ImageId"].values
+	data_X, image_dict, file_names, images_meta = hf.get_adversarial_data()
 
 	adv_image_dict = np.load("/media/data_cifs/danshiebler/data/adversarial/adversarial_images/{}.npy".format(signature)).item()
 	data_X_adv = np.vstack([adv_image_dict[fname][None,...] for fname in file_names])
 	
-	image_dict = np.load("/media/data_cifs/danshiebler/data/adversarial/image_dict.npy").item()
-	data_X = np.vstack([image_dict[fname][None,...] for fname in file_names])
+	print "\n\n\n\n\n"
+	print data_X_adv.shape, data_X.shape, np.mean(data_X_adv), np.mean(data_X), np.std(data_X_adv), np.std(data_X)  
+	print "\n\n\n\n\n"
 
-	print data_X_adv.shape, data_X.shape
 
 	with tf.device("/gpu:0"):
 		with tf.variable_scope('cnn'):

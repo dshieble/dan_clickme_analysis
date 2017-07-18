@@ -28,7 +28,7 @@ import tensorflow_helpers as tfhf
 import pickledb
 
 
-def generate_adversarial_images(saved_weights_path, kind, ids_path):
+def generate_adversarial_images(saved_weights_path):
 	#TODO: Have this consume imagenet images, and then write those to a new dataset
 	db = pickledb.load('databases/generated_adversarial_images.db', True)
 
@@ -40,17 +40,11 @@ def generate_adversarial_images(saved_weights_path, kind, ids_path):
 	image_height      = 224
 	batch_size        = 16
 
-	eps = 2.0 * max_epsilon
+	eps = 2.0 * max_epsilon / 255.0
 	batch_shape = [batch_size, image_height, image_width, 3]
 
-
 	tf.reset_default_graph()
-	images_meta = pd.read_csv("/media/data_cifs/danshiebler/data/adversarial/images.csv")
-	file_names =  images_meta["ImageId"].values
-
-	image_dict = np.load("/media/data_cifs/danshiebler/data/adversarial/image_dict.npy").item()
-	data_X = np.vstack([image_dict[fname][None,...] for fname in file_names])
-
+	data_X, image_dict, file_names, images_meta = hf.get_adversarial_data()
 
 	with tf.device("/gpu:0"):
 		with tf.variable_scope('cnn'):
@@ -60,10 +54,9 @@ def generate_adversarial_images(saved_weights_path, kind, ids_path):
 				return vgg.fc8
 
 			fgsm  = FastGradientMethod(model)
-			x_adv = fgsm.generate(x, eps=eps, clip_min=0., clip_max=256.)
+			x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1.)
 			sess = tfhf.initialize_session(saved_weights_path)
 
-			# Run the predictions
 			file_to_adv = {}
 			for i in tqdm(range(0, data_X.shape[0], batch_size)):
 				batch_data, batch_names = data_X[i:i+batch_size], file_names[i:i+batch_size]
@@ -71,23 +64,20 @@ def generate_adversarial_images(saved_weights_path, kind, ids_path):
 				for j in range(len(batch_names)):
 					file_to_adv[batch_names[j]] = adv[j]
 			np.save("/media/data_cifs/danshiebler/data/adversarial/adversarial_images/{}.npy".format(signature), file_to_adv)
-			db.set(signature, {"saved_weights_path":saved_weights_path, "kind":kind, "ids_path":ids_path})
+			db.set(signature, {"saved_weights_path":saved_weights_path})
 	return signature
 
 if __name__ == "__main__":
 	saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/attention_gradient_checkpoints/gradient_001_130671_2017_07_15_15_01_12/model_44000.ckpt-44000"
-	kind, ids_path = "val", "val_img_IDs.npy"
-	print generate_adversarial_images(saved_weights_path, kind, ids_path)
+	print generate_adversarial_images(saved_weights_path)
 
 
 	# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/baseline_001_50000_2017_06_07_10_19_47/model_252000.ckpt-252000"
-	# kind, ids_path = "val", "val_img_IDs.npy"
-	# generate_adversarial_images(saved_weights_path, kind, ids_path)
+	# generate_adversarial_images(saved_weights_path)
 
 
 	# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/gradient_001_124720_2017_06_07_10_19_49/model_162000.ckpt-162000"
-	# kind, ids_path = "val", "val_img_IDs.npy"
-	# generate_adversarial_images(saved_weights_path, kind, ids_path)
+	# generate_adversarial_images(saved_weights_path)
 
 
 

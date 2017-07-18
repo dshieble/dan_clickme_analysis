@@ -25,7 +25,6 @@ def run_model(signature, clf):
 	print "prediction for {}".format(features_db.get(signature)["saved_data_path"])
 
 	features_db = pickledb.load('databases/signature_to_saved_data_path.db', True)
-	signature = "1500301581"
 
 	img_ids, img_ID_to_LABELS = hf.get_ids_labels()
 	# img_ids = [ID for ID in img_ids if not img_ID_to_LABELS[ID] in [39, 45]]
@@ -70,26 +69,27 @@ def run_model(signature, clf):
 	hf.save_to_db(model_results_db, signature, data)
 
 
-# clf = SGDClassifier(warm_start=True, n_jobs=-1)#LogisticRegression(solver='sag', multi_class="multinomial", verbose=1000, n_jobs=-1)
-# signature = "1500179298"
-# batch_size = 50000
-# num_epochs = 10
-# run_model(signature, clf, batch_size, num_epochs)
+if __name__ == "__main__":
+	# clf = SGDClassifier(warm_start=True, n_jobs=-1)#LogisticRegression(solver='sag', multi_class="multinomial", verbose=1000, n_jobs=-1)
+	# signature = "1500179298"
+	# batch_size = 50000
+	# num_epochs = 10
+	# run_model(signature, clf, batch_size, num_epochs)
 
 
-for signature in ["1500301581", "1500301444", "1500301269"]:
-	clf = OneVsRestClassifier(SGDClassifier(loss="log", warm_start=True, n_jobs=-1))#LogisticRegression(solver='sag', multi_class="multinomial", verbose=1000, n_jobs=-1)
-	# clf = MLPClassifier(hidden_layer_sizes=(),
- #                                           activation='logistic', solver='adam', 
- #                                           alpha=0.0001, batch_size='auto', 
- #                                           learning_rate='constant', 
- #                                           learning_rate_init=0.001, power_t=0.5, 
- #                                           max_iter=200, shuffle=True, random_state=None, 
- #                                           tol=0.001, verbose=True, warm_start=False, 
- #                                           momentum=0.9, nesterovs_momentum=True,
- #                                           early_stopping=True, validation_fraction=0.1, 
- #                                           beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+	for signature in ["1500301581", "1500301444", "1500301269"]:
+		clf = OneVsRestClassifier(SGDClassifier(loss="log", warm_start=True, n_jobs=-1))#LogisticRegression(solver='sag', multi_class="multinomial", verbose=1000, n_jobs=-1)
+		# clf = MLPClassifier(hidden_layer_sizes=(),
+	 #                                           activation='logistic', solver='adam', 
+	 #                                           alpha=0.0001, batch_size='auto', 
+	 #                                           learning_rate='constant', 
+	 #                                           learning_rate_init=0.001, power_t=0.5, 
+	 #                                           max_iter=200, shuffle=True, random_state=None, 
+	 #                                           tol=0.001, verbose=True, warm_start=False, 
+	 #                                           momentum=0.9, nesterovs_momentum=True,
+	 #                                           early_stopping=True, validation_fraction=0.1, 
+	 #                                           beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
 
-	run_model(signature, clf)
+		run_model(signature, clf)
 
