@@ -69,11 +69,13 @@ def test_adversarial_performance(signature):
 						file_to_prob[kind][batch_names[j]] = probs[j]
 			np.save("/media/data_cifs/danshiebler/data/adversarial/adversarial_performances/{}.npy".format(signature), file_to_prob)
 
-# signature = "1500345943"
-# test_adversarial_performance(signature)
+if __name__ == "__main__":
+	pass
+	# signature = "1500345943"
+	# test_adversarial_performance(signature)
 
-# signature = "1500344185"
-# test_adversarial_performance(signature)
+	# signature = "1500344185"
+	# test_adversarial_performance(signature)
 
 
 

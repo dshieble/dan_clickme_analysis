@@ -40,7 +40,7 @@ def generate_adversarial_images(saved_weights_path, kind, ids_path):
 	image_height      = 224
 	batch_size        = 16
 
-	eps = 2.0 * max_epsilon / 255.0
+	eps = 2.0 * max_epsilon
 	batch_shape = [batch_size, image_height, image_width, 3]
 
 
@@ -60,7 +60,7 @@ def generate_adversarial_images(saved_weights_path, kind, ids_path):
 				return vgg.fc8
 
 			fgsm  = FastGradientMethod(model)
-			x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1.)
+			x_adv = fgsm.generate(x, eps=eps, clip_min=0., clip_max=256.)
 			sess = tfhf.initialize_session(saved_weights_path)
 
 			# Run the predictions
@@ -74,19 +74,20 @@ def generate_adversarial_images(saved_weights_path, kind, ids_path):
 			db.set(signature, {"saved_weights_path":saved_weights_path, "kind":kind, "ids_path":ids_path})
 	return signature
 
-# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/attention_gradient_checkpoints/gradient_001_130671_2017_07_15_15_01_12/model_44000.ckpt-44000"
-# kind, ids_path = "val", "val_img_IDs.npy"
-# generate_adversarial_images(saved_weights_path, kind, ids_path)
+if __name__ == "__main__":
+	saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/attention_gradient_checkpoints/gradient_001_130671_2017_07_15_15_01_12/model_44000.ckpt-44000"
+	kind, ids_path = "val", "val_img_IDs.npy"
+	print generate_adversarial_images(saved_weights_path, kind, ids_path)
 
 
-# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/baseline_001_50000_2017_06_07_10_19_47/model_252000.ckpt-252000"
-# kind, ids_path = "val", "val_img_IDs.npy"
-# generate_adversarial_images(saved_weights_path, kind, ids_path)
+	# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/baseline_001_50000_2017_06_07_10_19_47/model_252000.ckpt-252000"
+	# kind, ids_path = "val", "val_img_IDs.npy"
+	# generate_adversarial_images(saved_weights_path, kind, ids_path)
 
 
-# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/gradient_001_124720_2017_06_07_10_19_49/model_162000.ckpt-162000"
-# kind, ids_path = "val", "val_img_IDs.npy"
-# generate_adversarial_images(saved_weights_path, kind, ids_path)
+	# saved_weights_path = "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/gradient_001_124720_2017_06_07_10_19_49/model_162000.ckpt-162000"
+	# kind, ids_path = "val", "val_img_IDs.npy"
+	# generate_adversarial_images(saved_weights_path, kind, ids_path)
 
 
 
