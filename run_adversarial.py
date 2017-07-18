@@ -27,15 +27,13 @@ import pickledb
 from adversarial import generate_adversarial_images
 from test_adversarial import test_adversarial_performance
 
-kind, ids_path = "val", "val_img_IDs.npy"
-
 saved_weights_paths = [
 "/media/data_cifs/clicktionary/clickme_experiment/attention_gradient_checkpoints/gradient_001_130671_2017_07_15_15_01_12/model_44000.ckpt-44000",
 "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/baseline_001_50000_2017_06_07_10_19_47/model_252000.ckpt-252000",
 "/media/data_cifs/clicktionary/clickme_experiment/checkpoints/gradient_001_124720_2017_06_07_10_19_49/model_162000.ckpt-162000"]
 
 for swp in saved_weights_paths:
-	signature = generate_adversarial_images(swp, kind, ids_path)
+	signature = generate_adversarial_images(swp)
 	test_adversarial_performance(signature)
 
 

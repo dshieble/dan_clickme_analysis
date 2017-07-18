@@ -5,6 +5,7 @@ import numpy as np
 import time
 from tqdm import tqdm
 import json
+import pandas as pd
 data_path = "/media/data_cifs/danshiebler/data"
 base_path = "/media/data_cifs/image_datasets/coco_2014/coco_images"
 ilsvrc12_val_overlap_path = "{}/ilsvrc12_val_overlap".format(base_path)
@@ -51,6 +52,14 @@ def save_to_db(db, key, value):
 	db.set(key, value)
 
 
+def get_adversarial_data():
+	images_meta = pd.read_csv("/media/data_cifs/danshiebler/data/adversarial/images.csv")
+	file_names =  images_meta["ImageId"].values
+
+	image_dict = np.load("/media/data_cifs/danshiebler/data/adversarial/image_dict.npy").item()
+	image_dict = {k:v/255.0 for k,v in image_dict.items()}
+	data_X = np.vstack([image_dict[fname][None,...] for fname in file_names])
+	return data_X, image_dict, file_names, images_meta
 
 
 # def get_files_labels(load_small=False):

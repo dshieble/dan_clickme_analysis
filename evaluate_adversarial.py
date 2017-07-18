@@ -18,8 +18,7 @@ db = pickledb.load('databases/generated_adversarial_images.db', True)
 
 perf_list = [p.split(".")[0] for p in hf.ls_function("/media/data_cifs/danshiebler/data/adversarial/adversarial_performances")]
 
-
-for signature in ['1500349214', '1500349087', '1500349005']:
+for signature in [str(s) for s in sorted([int(p) for p in perf_list])[-3:]]:
 	data_obj = db.get(signature)
 	print data_obj
 
@@ -37,7 +36,7 @@ for signature in ['1500349214', '1500349087', '1500349005']:
 
 	for k in correct:
 		for i, (_, row) in tqdm(enumerate(images_meta.iterrows())):
-			inds = performance[k][row["ImageId"]].argsort()[-5:][::-1] + 1 # Add 1 to the inds to make it match the categories
+			inds = performance[k][row["ImageId"]].argsort()[-10:][::-1] + 1 # Add 1 to the inds to make it match the categories
 			correct[k].append(row["TrueLabel"] in inds)
 			# for j, ind in enumerate(inds):
 			# 	print j, categories["CategoryName"][ind]
