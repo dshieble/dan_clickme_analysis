@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from scipy.misc import imread
 from collections import Counter
    
-from config import clickMeConfig
+from config import clickMeConfig, InceptionConfig
 import baseline_vgg16 as vgg16
 from tqdm import tqdm
 import time
@@ -39,7 +39,7 @@ def get_vgg_x():
 	print "vgg built!"
 	return vgg, x
 
-def initialize_session(saved_weights_path):
+def initialize_session_vgg(saved_weights_path, vars=None):
 
 	# Initialize the graph
 	print "initializing the graph..."
@@ -50,26 +50,44 @@ def initialize_session(saved_weights_path):
 			tf.local_variables_initializer()))
 	print "initialized the graph!"
 
-
 	# Load the saved weights
-	saver = tf.train.Saver(tf.global_variables())
-	saver.restore(sess, saved_weights_path)	
+	if saved_weights_path:
+		if vars is None:
+			vars = tf.trainable_variables()
+		print "Restoring {} variables".format(len(vars))
+		saver = tf.train.Saver(vars)
+		saver.restore(sess, saved_weights_path)	
 	return sess
 
 
-# def linear_model(input_size, output_size):
-# 	"""
-# 	Builds a linear model and returns:
-# 		The output variable
-# 		The placeholder x variable
-# 		The placeholder y variable
-# 		The updt object
+def initialize_session_inception(saved_weights_path, exclude_scopes):
+	config = clickMeConfig()
+	incfg = InceptionConfig()
+	# Initialize the graph
+	print "initializing the graph..."
+	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+	sess.run(
+		tf.group(
+			tf.global_variables_initializer(),
+			tf.local_variables_initializer()))
+	print "initialized the graph!"
 
-# 	"""
-# 	x = tf.placeholder(tf.float32, (None, input_size), name="x") #the input variable
-# 	weights = tf.get_variable("weights", shape=(input_size, output_size), dtype=np.float32)
-#     biases = tf.get_variable("bias", initializer=np.zeros(output_size, dtype=np.float32))
-#     loss = tf.nn.l2_loss(weights)
-
-
+	# Load the saved weights
+	if saved_weights_path:
+		print "restoring {}".format(saved_weights_path)
+		# Figure out which variables to restore from the baseline model and which to restore from the new trained model
+		# baseline_vars = []
+		trained_vars = tf.trainable_variables()#tf.contrib.slim.get_model_variables()
+		# for var in tf.contrib.slim.get_model_variables():
+		# 	if not any(map(lambda x: var.op.name.startswith(x), exclude_scopes)):
+		# 		baseline_vars.append(var)
+		# 	else:
+		# 		trained_vars.append(var)
+		# restore the variables from the baseline model
+		# restorer = tf.train.Saver(baseline_vars)
+		# restorer.restore(sess, incfg.pretrained_ckpt)	
+		# restore the attention saved models
+		saver = tf.train.Saver(trained_vars)
+		saver.restore(sess, saved_weights_path)	
+	return sess
 
