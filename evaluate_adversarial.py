@@ -17,7 +17,7 @@ if __name__ == "__main__":
 	n = int(sys.argv[1]) if (len(sys.argv) > 1) else 5
 	prev = int(sys.argv[2]) if (len(sys.argv) > 2) else 3
 
-	db = pickledb.load('databases/generated_adversarial_images.db', True)
+	db = pickledb.load('/media/data_cifs/danshiebler/databases/generated_adversarial_images.db', True)
 
 	perf_list = [p.split(".")[0] for p in hf.ls_function("/media/data_cifs/danshiebler/data/adversarial/adversarial_performances")]
 

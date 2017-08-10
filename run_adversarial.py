@@ -27,19 +27,32 @@ from adversarial import generate_adversarial_images
 from test_adversarial import test_adversarial_performance
 
 saved_weights_paths = [
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_28_03_06_10/model_220000.ckpt-220000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_27_21_21_30/model_236000.ckpt-236000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_27_21_21_27/model_236000.ckpt-236000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_27_21_21_28/model_236000.ckpt-236000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_27_21_21_31/model_236000.ckpt-236000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_28_03_06_12/model_220000.ckpt-220000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.001_144023_2017_07_28_03_06_14/model_206000.ckpt-206000",
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.001_144023_2017_07_27_21_21_32/model_216000.ckpt-216000"
-
+# "/media/cifs_all/charlie/clickme/baseline_inception_checkpoints/inception_v3.ckpt",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_28_03_06_10/model_268000.ckpt-268000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_27_21_21_30/model_284000.ckpt-284000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_27_21_21_27/model_284000.ckpt-284000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_27_21_21_28/model_284000.ckpt-284000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_27_21_21_31/model_284000.ckpt-284000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_5e-05_144023_2017_07_28_03_06_12/model_268000.ckpt-268000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.001_144023_2017_07_28_03_06_14/model_268000.ckpt-268000",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.001_144023_2017_07_27_21_21_32/model_284000.ckpt-284000"
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_144536_2017_08_03_14_45_26/model_4000.ckpt-4000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_144536_2017_08_03_14_45_28/model_4000.ckpt-4000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_144536_2017_08_03_14_45_31/model_4000.ckpt-4000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_144536_2017_08_03_14_45_19/model_4000.ckpt-4000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_144536_2017_08_03_14_45_29/model_4000.ckpt-4000"
 # "/media/data_cifs/clicktionary/clickme_experiment/attgrad_vgg_checkpoints/gradient_-05_144023_2017_07_27_03_55_12/model_244000.ckpt-244000",
 # "/media/data_cifs/clicktionary/clickme_experiment/attgrad_vgg_checkpoints/gradient_-05_144023_2017_07_27_03_55_03/model_244000.ckpt-244000",
 # "/media/data_cifs/clicktionary/clickme_experiment/attgrad_vgg_checkpoints/gradient_0001_144023_2017_07_27_03_55_01/model_240000.ckpt-240000",
 # "/media/data_cifs/clicktionary/clickme_experiment/attgrad_vgg_checkpoints/gradient_001_144023_2017_07_27_03_55_08/model_126000.ckpt-126000"
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_20/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_24/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_29/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_18/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_30/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_32/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_145928_2017_08_08_01_47_22/model_26000.ckpt-26000",
+"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_145928_2017_08_08_01_47_26/model_26000.ckpt-26000"
 ]
 
 model_kinds = ["inception"]*8 #+ ["vgg"]*4

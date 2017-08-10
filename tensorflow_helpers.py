@@ -2,8 +2,8 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 import sys
-sys.path.append("clickme_modeling")
-sys.path.append("clickme_modeling/models")
+sys.path.append("../clickme_modeling")
+sys.path.append("../clickme_modeling/models")
 
 import tensorflow as tf
 import h5py
@@ -19,6 +19,8 @@ import baseline_vgg16 as vgg16
 from tqdm import tqdm
 import time
 import tensorflow_helpers as tfhf
+from ops.get_slim_ops import inception_input_processing
+import models.slim_inception_v3 as inception
 
 import pickledb
 db = pickledb.load('databases/signature_to_saved_data_path.db', True)
@@ -59,8 +61,13 @@ def initialize_session_vgg(saved_weights_path, vars=None):
 		saver.restore(sess, saved_weights_path)	
 	return sess
 
+def inception_model(x, saved_weights_path):
+	inception_kwargs = {'num_classes':1000} if "baseline" in saved_weights_path else {}
+	with tf.contrib.slim.arg_scope(inception.inception_v3_arg_scope()):
+		logits, _ = inception.inception_v3(inception_input_processing(x), is_training=False, **inception_kwargs)
+	return logits
 
-def initialize_session_inception(saved_weights_path, exclude_scopes):
+def initialize_session_inception(saved_weights_path):
 	config = clickMeConfig()
 	incfg = InceptionConfig()
 	# Initialize the graph
@@ -77,7 +84,11 @@ def initialize_session_inception(saved_weights_path, exclude_scopes):
 		print "restoring {}".format(saved_weights_path)
 		# Figure out which variables to restore from the baseline model and which to restore from the new trained model
 		# baseline_vars = []
-		trained_vars = tf.trainable_variables()#tf.contrib.slim.get_model_variables()
+		# tvars = tf.trainable_variables()#tf.contrib.slim.get_model_variables()
+
+		tvars = tf.contrib.slim.get_model_variables()
+		# for tv in tvars:
+		# 	print tv
 		# for var in tf.contrib.slim.get_model_variables():
 		# 	if not any(map(lambda x: var.op.name.startswith(x), exclude_scopes)):
 		# 		baseline_vars.append(var)
@@ -87,7 +98,7 @@ def initialize_session_inception(saved_weights_path, exclude_scopes):
 		# restorer = tf.train.Saver(baseline_vars)
 		# restorer.restore(sess, incfg.pretrained_ckpt)	
 		# restore the attention saved models
-		saver = tf.train.Saver(trained_vars)
+		saver = tf.train.Saver(tvars)
 		saver.restore(sess, saved_weights_path)	
 	return sess
 

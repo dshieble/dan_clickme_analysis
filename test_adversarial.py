@@ -15,6 +15,7 @@ from scipy.misc import imread
 from scipy.misc import imsave
 import tensorflow_helpers as tfhf
 import models.slim_inception_v3 as inception
+from ops.get_slim_ops import inception_input_processing
 
 
 import helper_functions as hf
@@ -33,7 +34,7 @@ def test_adversarial_performance(signature):
 	tf.reset_default_graph()
 	config = clickMeConfig()
 	incfg = InceptionConfig()
-	db = pickledb.load('databases/generated_adversarial_images.db', True)
+	db = pickledb.load('/media/data_cifs/danshiebler/databases/generated_adversarial_images.db', True)
 
 	batch_size = 100
 
@@ -62,10 +63,9 @@ def test_adversarial_performance(signature):
 				sess = tfhf.initialize_session_vgg(saved_weights_path)	
 		elif model_kind == "inception":# instantiate the inception network
 			x = tf.placeholder(tf.float32, (None, 224, 224, 3), name="x") #the input variable
-			with tf.contrib.slim.arg_scope(inception.inception_v3_arg_scope()):
-				predictions, _ = inception.inception_v3(x, is_training=False)
+			predictions = tfhf.inception_model(x, saved_weights_path)
 
-			sess = tfhf.initialize_session_inception(saved_weights_path, incfg.exclude_scopes)	
+			sess = tfhf.initialize_session_inception(saved_weights_path)	
 
 		else:
 			assert False
@@ -82,9 +82,8 @@ def test_adversarial_performance(signature):
 		np.save("/media/data_cifs/danshiebler/data/adversarial/adversarial_performances/{}.npy".format(signature), file_to_prob)
 
 if __name__ == "__main__":
-	pass
-	# signature = "1500433264"
-	# test_adversarial_performance(signature)
+	signature = "1500433264"
+	test_adversarial_performance(signature)
 
 	# signature = "1500344185"
 	# test_adversarial_performance(signature)

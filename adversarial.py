@@ -13,6 +13,7 @@ from scipy.misc import imread
 from scipy.misc import imsave
 import tensorflow_helpers as tfhf
 import models.slim_inception_v3 as inception
+from ops.get_slim_ops import inception_input_processing
 
 import helper_functions as hf
 from collections import Counter
@@ -29,7 +30,7 @@ import pickledb
 def generate_adversarial_images(saved_weights_path, model_kind):
 	config = clickMeConfig()
 	incfg = InceptionConfig()
-	db = pickledb.load('databases/generated_adversarial_images.db', True)
+	db = pickledb.load('/media/data_cifs/danshiebler/databases/generated_adversarial_images.db', True)
 
 
 	signature = str(int(time.time()))
@@ -61,19 +62,17 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 			x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1., ord=np.inf) 
 
 			# Load the saved weights and initialize the tensorflow graph
-			sess = tfhf.initialize_session_vgg(saved_weights_path, tf.trainable_variables())	
+			sess = tfhf.initialize_session_vgg(saved_weights_path, tf.trainable_variables())
 		elif model_kind == "inception":
 
-			with tf.contrib.slim.arg_scope(inception.inception_v3_arg_scope()):
-				train_logits, _ = inception.inception_v3(x, is_training=False)
-
-			def model(x): return train_logits
+			logits = tfhf.inception_model(x, saved_weights_path)
+			def model(x): return logits
 			# Load the fast gradient computation graph
 			fgsm  = FastGradientMethod(model)
 			x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1., ord=np.inf) 
 
 			# Load the saved weights and initialize the tensorflow graph
-			sess = tfhf.initialize_session_inception(saved_weights_path, incfg.exclude_scopes)	
+			sess = tfhf.initialize_session_inception(saved_weights_path)	
 
 		else:
 			assert False
