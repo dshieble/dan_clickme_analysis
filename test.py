@@ -1,8 +1,49 @@
 # GENERATE ADVERSARIAL IMAGES FOR A GIVEN SAVED WEIGHTS MODEL
-from ops.db import get_data, create_dir, get_ims
+import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+import tensorflow as tf
+import os
+import numpy as np
+from scipy.stats import pearsonr
 
-A = get_data()
-print A["clicks"][:4]
+
+def tf_pearsonr(x1, x2):
+	x1_mean = tf.reduce_mean(tf.reduce_mean(x1, axis=[-1]), keep_dims=True, axis=[-1])
+	x2_mean = tf.reduce_mean(tf.reduce_mean(x2, axis=[-1]), keep_dims=True, axis=[-1])
+
+	x1_flat = tf.reshape(x1, (-1, 224*224))
+	x2_flat = tf.reshape(x2, (-1, 224*224))
+	x1_flat_normed = x1_flat - x1_mean
+	x2_flat_normed = x2_flat - x2_mean
+
+
+	cov = tf.div(tf.reduce_sum(tf.multiply(x1_flat_normed, x2_flat_normed), -1), 224*224 - 1)
+	x1_std = tf.sqrt(tf.div(tf.reduce_sum(tf.square(x1_flat - x1_mean), -1), 224*224 - 1))
+	x2_std = tf.sqrt(tf.div(tf.reduce_sum(tf.square(x2_flat - x2_mean), -1), 224*224 - 1))
+
+	corr = cov/(tf.multiply(x1_std, x2_std))
+	return corr
+
+x1 = tf.placeholder(tf.float32, (None, 224, 224), name="x") #the input variable
+x2 = tf.placeholder(tf.float32, (None, 224, 224), name="x") #the input variable
+
+corr = tf_pearsonr(x1, x2)
+
+
+sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+sess.run(
+	tf.group(
+		tf.global_variables_initializer(),
+		tf.local_variables_initializer()))
+print "initialized the graph!"
+
+x1_vals = np.random.random((32, 224,224))
+x2_vals = x1_vals + np.random.random((32, 224,224))*0.5
+
+print "TRUE", pearsonr(np.ravel(x1_vals), np.ravel(x2_vals))[0]
+C = sess.run(corr, feed_dict={x1:x1_vals, x2:x2_vals})
+print "EST", C
+
 # import os
 # os.environ["CUDA_VISIBLE_DEVICES"]="0"
 # import tensorflow as tf
