@@ -1,6 +1,4 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
-
 import sys
 sys.path.append("../clickme_modeling")
 sys.path.append("../clickme_modeling/models")
@@ -67,12 +65,11 @@ def inception_model(x, saved_weights_path):
 		logits, _ = inception.inception_v3(inception_input_processing(x), is_training=False, **inception_kwargs)
 	return logits
 
-def initialize_session_inception(saved_weights_path):
-	config = clickMeConfig()
-	incfg = InceptionConfig()
+def initialize_session_inception(saved_weights_path, sess=None):
 	# Initialize the graph
 	print "initializing the graph..."
-	sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+	if not sess:
+		sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
 	sess.run(
 		tf.group(
 			tf.global_variables_initializer(),

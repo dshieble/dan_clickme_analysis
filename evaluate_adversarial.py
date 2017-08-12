@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
 		performance = np.load("/media/data_cifs/danshiebler/data/adversarial/adversarial_performances/{}.npy".format(signature)).item()
 
-		correct = {"normal":[], "adv":[]}
+		correct = {k:[] for k in performance}
 
 		print
 		print "**********"

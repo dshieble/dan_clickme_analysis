@@ -1,5 +1,4 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
 import tensorflow as tf
 import os
 from cleverhans.attacks import FastGradientMethod
@@ -46,13 +45,13 @@ saved_weights_paths = [
 # "/media/data_cifs/clicktionary/clickme_experiment/attgrad_vgg_checkpoints/gradient_0001_144023_2017_07_27_03_55_01/model_240000.ckpt-240000",
 # "/media/data_cifs/clicktionary/clickme_experiment/attgrad_vgg_checkpoints/gradient_001_144023_2017_07_27_03_55_08/model_126000.ckpt-126000"
 "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_20/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_24/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_29/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_18/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_30/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_32/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_145928_2017_08_08_01_47_22/model_26000.ckpt-26000",
-"/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_145928_2017_08_08_01_47_26/model_26000.ckpt-26000"
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_24/model_26000.ckpt-26000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_29/model_26000.ckpt-26000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_18/model_26000.ckpt-26000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_30/model_26000.ckpt-26000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.0001_145928_2017_08_08_01_47_32/model_26000.ckpt-26000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_145928_2017_08_08_01_47_22/model_26000.ckpt-26000",
+# "/media/data_cifs/clicktionary/clickme_experiment/baseline_inception_checkpoints/baseline_0.001_145928_2017_08_08_01_47_26/model_26000.ckpt-26000"
 ]
 
 model_kinds = ["inception"]*8 #+ ["vgg"]*4

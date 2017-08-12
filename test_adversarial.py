@@ -3,7 +3,6 @@
 # TEST THE PERFORMANCE OF A GIVEN MODEL ON AN ADVERSARIAL DATASET
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
 import tensorflow as tf
 import os
 from cleverhans.attacks import FastGradientMethod
@@ -39,6 +38,7 @@ def test_adversarial_performance(signature):
 	batch_size = 100
 
 	fetched = db.get(signature)
+	attack_name_list = fetched["attack_name_list"]
 	model_kind = fetched["model_kind"]
 	saved_weights_path = fetched["saved_weights_path"]
 	print "prediction for {}".format(saved_weights_path)
@@ -47,11 +47,9 @@ def test_adversarial_performance(signature):
 	data_X, image_dict, file_names, images_meta = hf.get_adversarial_data()
 
 	adv_image_dict = np.load("/media/data_cifs/danshiebler/data/adversarial/adversarial_images/{}.npy".format(signature)).item()
-	data_X_adv = np.vstack([adv_image_dict[fname][None,...] for fname in file_names])
-	
-	print "\n\n\n\n\n"
-	print data_X_adv.shape, data_X.shape, np.mean(data_X_adv), np.mean(data_X), np.std(data_X_adv), np.std(data_X)  
-	print "\n\n\n\n\n"
+	attack_to_data_X_adv = {}
+	for attack_name in attack_name_list:
+		attack_to_data_X_adv[attack_name] = np.vstack([adv_image_dict[fname][attack_name][None,...] for fname in file_names])
 
 
 	with tf.device("/gpu:0"):
@@ -71,8 +69,10 @@ def test_adversarial_performance(signature):
 			assert False
 
 		# Run the predictions
+
 		file_to_prob = {}
-		for X, kind in [(data_X, "normal"), (data_X_adv, "adv")]:
+		adv_X_kinds = [(attack_to_data_X_adv[attack_name], attack_name) for attack_name in attack_name_list]
+		for X, kind in [(data_X, "normal")] + adv_X_kinds:
 			file_to_prob[kind] = {}
 			for i in tqdm(range(0, X.shape[0], batch_size)):
 				batch_data, batch_names = X[i:i+batch_size], file_names[i:i+batch_size]

@@ -1,10 +1,9 @@
 # GENERATE ADVERSARIAL IMAGES FOR A GIVEN SAVED WEIGHTS MODEL
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
 import tensorflow as tf
 import os
-from cleverhans.attacks import FastGradientMethod
+from cleverhans.attacks import FastGradientMethod, BasicIterativeMethod, SaliencyMapMethod, VirtualAdversarialMethod
 from io import BytesIO
 import numpy as np
 import pandas as pd
@@ -46,62 +45,90 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 	data_X, image_dict, file_names, images_meta = hf.get_adversarial_data()
 	assert np.std(data_X) > 0 and np.std(data_X) < 1
 	print "np.mean(data_X), np.std(data_X)", np.mean(data_X), np.std(data_X)
-	
+
+	attack_methods = [FastGradientMethod, BasicIterativeMethod, SaliencyMapMethod, VirtualAdversarialMethod]
+	attack_name_list = ["FastGradientMethod", "BasicIterativeMethod", "SaliencyMapMethod", "VirtualAdversarialMethod"]
+	attack_kwargs_list = [{"clip_min":-1., "clip_max":1., "ord":np.inf},
+						  {"eps":0.3, "eps_iter":0.05, "nb_iter":10, 'ord':2}, 
+						  {}, {}, {}]
+
+
+	# attack_methods = attack_methods[3:4]
+	# attack_name_list = attack_name_list[3:4]
+	# attack_kwargs_list = attack_kwargs_list[3:4]
+
+
+	x_adv_list = []
+
 	with tf.device("/gpu:0"):
 		
-		x = tf.placeholder(tf.float32, (None, 224, 224, 3), name="x") #the input variable
+		x = tf.placeholder(tf.float32, (batch_size, 224, 224, 3), name="x") #the input variable
 
 		if model_kind == "vgg":
-			with tf.variable_scope('cnn'):
+
+			# Build the VGG initially
+			with tf.variable_scope('cnn_'):
 				vgg = vgg16.Vgg16(vgg16_npy_path=None, fine_tune_layers=[])
 				vgg.build(x, output_shape=config.output_shape, train_mode=tf.Variable(False, name='training'))
 
-			def model(x): return vgg.fc8/tf.norm(vgg.fc8)
-			# Load the fast gradient computation graph
-			fgsm  = FastGradientMethod(model)
-			x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1., ord=np.inf) 
 
+			def model(x): 
+				with tf.variable_scope('cnn_'):
+					# Build the vgg with reused variables
+					tf.get_variable_scope().reuse_variables()
+					vgg = vgg16.Vgg16(vgg16_npy_path=None, fine_tune_layers=[])
+					vgg.build(x, output_shape=config.output_shape, train_mode=tf.Variable(False, name='training'))
+
+				return vgg.fc8/tf.norm(vgg.fc8)
+			# Load the fast gradient computation graph
+			for attack_method, kwargs in zip(attack_methods, attack_kwargs_list):	
+				attack  = attack_method(model)
+				x_adv = attack.generate(x, **kwargs) 
+				x_adv_list.append(x_adv)
 			# Load the saved weights and initialize the tensorflow graph
 			sess = tfhf.initialize_session_vgg(saved_weights_path, tf.trainable_variables())
 		elif model_kind == "inception":
 
-			logits = tfhf.inception_model(x, saved_weights_path)
-			def model(x): return logits
-			# Load the fast gradient computation graph
-			fgsm  = FastGradientMethod(model)
-			x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1., ord=np.inf) 
 
+			logits = tfhf.inception_model(x, saved_weights_path)
+
+			def model(x): 
+				tf.get_variable_scope().reuse_variables()
+				return tfhf.inception_model(x, saved_weights_path)
+			# Load the fast gradient computation graph
+			for attack_method, kwargs in zip(attack_methods, attack_kwargs_list):	
+				attack  = attack_method(model)
+				x_adv = attack.generate(x, **kwargs) 
+				x_adv_list.append(x_adv)
 			# Load the saved weights and initialize the tensorflow graph
 			sess = tfhf.initialize_session_inception(saved_weights_path)	
 
 		else:
 			assert False
 
-		# # Load the fast gradient computation graph
-		# fgsm  = FastGradientMethod(model)
-		# x_adv = fgsm.generate(x, eps=eps, clip_min=-1., clip_max=1., ord=np.inf) 
 
-		# # Load the saved weights and initialize the tensorflow graph
-		# sess = tfhf.initialize_session(saved_weights_path, tf.trainable_variables())		
 
 		file_to_adv = {}
 		for i in tqdm(range(0, data_X.shape[0], batch_size)):
 			batch_data, batch_names = data_X[i:i+batch_size], file_names[i:i+batch_size]
-			adv = sess.run(x_adv, feed_dict={x:batch_data})
+			generated_adversarial_images = {}
+			for attack_name, x_adv in zip(attack_name_list, x_adv_list):
+				adv = sess.run(x_adv, feed_dict={x:batch_data})
+				generated_adversarial_images[attack_name] = adv
+				########################################################################################
+				print "adv stats", np.mean(batch_data),  np.mean(adv), np.mean(batch_data - adv), np.std(batch_data - adv) ####
 
-			########################################################################################
-			print "adv stats", np.mean(batch_data),  np.mean(adv), np.mean(batch_data - adv), np.std(batch_data - adv) ####
-
-			########################################################################################
-
+				########################################################################################
 
 
 
 			for j in range(len(batch_names)):
-				file_to_adv[batch_names[j]] = adv[j]
+				file_to_adv[batch_names[j]] = {}
+				for attack_name in attack_name_list:
+					file_to_adv[batch_names[j]][attack_name] = generated_adversarial_images[attack_name][j]
 
 		np.save("/media/data_cifs/danshiebler/data/adversarial/adversarial_images/{}.npy".format(signature), file_to_adv)
-		db.set(signature, {"saved_weights_path":saved_weights_path, "model_kind":model_kind })
+		db.set(signature, {"saved_weights_path":saved_weights_path, "model_kind":model_kind, "attack_name_list":attack_name_list})
 		# print tf.trainable_variables()
 	return signature
 
