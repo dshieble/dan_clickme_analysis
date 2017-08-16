@@ -15,4 +15,6 @@ pip install sshtunnel
 pip install --upgrade dask
 pip install seaborn
 pip install -e git+http://github.com/tensorflow/cleverhans.git#egg=cleverhans
+sudo apt-get install sqlite3
+sudo apt-get install sshpass
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64/
