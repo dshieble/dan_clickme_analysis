@@ -26,8 +26,8 @@ from adversarial import generate_adversarial_images
 from test_adversarial import test_adversarial_performance
 
 saved_weights_paths = [
-"/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_1e-05_1283163_2017_08_13_19_46_01_1502667961/model_20000.ckpt-20000",
-"/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/baseline_0.0001_1283163_2017_08_16_12_09_55_1502899794/model_4000.ckpt"
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_1e-05_1283163_2017_08_13_19_46_01_1502667961/model_20000.ckpt-20000",
+"/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/baseline_0.0001_1283163_2017_08_16_12_09_55_1502899794/model_4000-4000.ckpt"
 # "/media/cifs_all/charlie/clickme/baseline_inception_checkpoints/inception_v3.ckpt",
 # "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_28_03_06_10/model_268000.ckpt-268000",
 # "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_27_21_21_30/model_284000.ckpt-284000",
