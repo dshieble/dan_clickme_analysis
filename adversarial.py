@@ -36,7 +36,7 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 
 	image_width       = 224
 	image_height      = 224
-	batch_size        = 2
+	batch_size        = 10
 
 	batch_shape = [batch_size, image_height, image_width, 3]
 
@@ -53,13 +53,13 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 	# attack_kwargs_list = [{"nb_classes":1000, "learning_rate":1e-2, "max_iterations":100}, {}, {}]
 
 
-	attack_methods = [CarliniWagnerL2, FastGradientMethod, BasicIterativeMethod, ]#, VirtualAdversarialMethod]
+	attack_methods = [CarliniWagnerL2, FastGradientMethod, BasicIterativeMethod]#, VirtualAdversarialMethod]
 	attack_name_list = ["CarliniWagnerL2", "FastGradientMethod", "BasicIterativeMethod"]#, "VirtualAdversarialMethod"]
 	attack_kwargs_list = [{"nb_classes":1000, "learning_rate":8e-2, 'initial_const':1e-1, "max_iterations":100}, {"eps":0.05}, {"eps":0.05}]
 
-	# attack_methods = []
-	# # attack_name_list = []
-	# # attack_kwargs_list = []
+	attack_methods = attack_methods[1:]
+	attack_name_list = attack_name_list[1:]
+	attack_kwargs_list = attack_kwargs_list[1:]
 
 	# attack_methods += [FastGradientMethod, BasicIterativeMethod]
 	# attack_name_list += ["FastGradientMethod_{}".format(e), "BasicIterativeMethod_{}".format(e)]
