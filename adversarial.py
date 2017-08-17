@@ -3,7 +3,7 @@
 import os
 import tensorflow as tf
 import os
-from cleverhans.attacks import FastGradientMethod, BasicIterativeMethod, SaliencyMapMethod, VirtualAdversarialMethod
+from cleverhans.attacks import FastGradientMethod, BasicIterativeMethod, CarliniWagnerL2, SaliencyMapMethod, VirtualAdversarialMethod
 from io import BytesIO
 import numpy as np
 import pandas as pd
@@ -36,9 +36,8 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 
 	image_width       = 224
 	image_height      = 224
-	batch_size        = 100
+	batch_size        = 2
 
-	eps = 0.03
 	batch_shape = [batch_size, image_height, image_width, 3]
 
 	tf.reset_default_graph()
@@ -46,16 +45,35 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 	assert np.std(data_X) > 0 and np.std(data_X) < 1
 	print "np.mean(data_X), np.std(data_X)", np.mean(data_X), np.std(data_X)
 
-	attack_methods = [FastGradientMethod, BasicIterativeMethod, SaliencyMapMethod, VirtualAdversarialMethod]
-	attack_name_list = ["FastGradientMethod", "BasicIterativeMethod", "SaliencyMapMethod", "VirtualAdversarialMethod"]
-	attack_kwargs_list = [{"clip_min":-1., "clip_max":1., "ord":np.inf},
-						  {"eps":0.3, "eps_iter":0.05, "nb_iter":10, 'ord':2}, 
-						  {}, {}, {}]
+
+	#  TODO: ONCE YOU HAVE A BUNCH OF MODELS TO COMPARE - JUST RUN LIKE 15 ADVERSARIAL MODELS
+
+	# attack_methods = [CarliniWagnerL2, FastGradientMethod, BasicIterativeMethod, SaliencyMapMethod]#, VirtualAdversarialMethod]
+	# attack_name_list = ["CarliniWagnerL2", "FastGradientMethod", "BasicIterativeMethod", "SaliencyMapMethod"]#, "VirtualAdversarialMethod"]
+	# attack_kwargs_list = [{"nb_classes":1000, "learning_rate":1e-2, "max_iterations":100}, {}, {}]
 
 
-	# attack_methods = attack_methods[3:4]
-	# attack_name_list = attack_name_list[3:4]
-	# attack_kwargs_list = attack_kwargs_list[3:4]
+	attack_methods = [CarliniWagnerL2, FastGradientMethod, BasicIterativeMethod, ]#, VirtualAdversarialMethod]
+	attack_name_list = ["CarliniWagnerL2", "FastGradientMethod", "BasicIterativeMethod"]#, "VirtualAdversarialMethod"]
+	attack_kwargs_list = [{"nb_classes":1000, "learning_rate":8e-2, 'initial_const':1e-1, "max_iterations":100}, {"eps":0.05}, {"eps":0.05}]
+
+	# attack_methods = []
+	# # attack_name_list = []
+	# # attack_kwargs_list = []
+
+	# attack_methods += [FastGradientMethod, BasicIterativeMethod]
+	# attack_name_list += ["FastGradientMethod_{}".format(e), "BasicIterativeMethod_{}".format(e)]
+	# attack_kwargs_list += [{"eps":eps}, {"eps":eps}]
+
+
+	# attack_methods += [CarliniWagnerL2]
+	# attack_name_list += ["CarliniWagnerL2"]
+	# attack_kwargs_list += [{}]
+
+	# print attack_name_list
+	# attack_methods = attack_methods[:2]
+	# attack_name_list = attack_name_list[:2]
+	# attack_kwargs_list = attack_kwargs_list[:2]
 
 
 	x_adv_list = []
@@ -80,31 +98,32 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 					vgg.build(x, output_shape=config.output_shape, train_mode=tf.Variable(False, name='training'))
 
 				return vgg.fc8/tf.norm(vgg.fc8)
-			# Load the fast gradient computation graph
-			for attack_method, kwargs in zip(attack_methods, attack_kwargs_list):	
-				attack  = attack_method(model)
-				x_adv = attack.generate(x, **kwargs) 
-				x_adv_list.append(x_adv)
-			# Load the saved weights and initialize the tensorflow graph
-			sess = tfhf.initialize_session_vgg(saved_weights_path, tf.trainable_variables())
+
+
 		elif model_kind == "inception":
-
-
 			logits = tfhf.inception_model(x, saved_weights_path)
 
 			def model(x): 
-				tf.get_variable_scope().reuse_variables()
-				return tfhf.inception_model(x, saved_weights_path)
-			# Load the fast gradient computation graph
-			for attack_method, kwargs in zip(attack_methods, attack_kwargs_list):	
-				attack  = attack_method(model)
-				x_adv = attack.generate(x, **kwargs) 
-				x_adv_list.append(x_adv)
-			# Load the saved weights and initialize the tensorflow graph
-			sess = tfhf.initialize_session_inception(saved_weights_path)	
+				with tf.variable_scope("", reuse=True):
+					# tf.get_variable_scope().reuse_variables()
+					return tfhf.inception_model(x, saved_weights_path)
 
 		else:
 			assert False
+
+		sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+
+		# Load the fast gradient computation graph
+		for attack_method, kwargs in zip(attack_methods, attack_kwargs_list):	
+			attack  = attack_method(model, sess=sess)
+			x_adv = attack.generate(x, **kwargs) 
+			x_adv_list.append(x_adv)
+
+		# Load the saved weights and initialize the tensorflow graph
+		if model_kind == "vgg":
+			sess = tfhf.initialize_session_vgg(saved_weights_path, tf.trainable_variables(), sess=sess)
+		elif model_kind == "inception":
+			sess = tfhf.initialize_session_inception(saved_weights_path, sess=sess)	
 
 
 
@@ -113,12 +132,10 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 			batch_data, batch_names = data_X[i:i+batch_size], file_names[i:i+batch_size]
 			generated_adversarial_images = {}
 			for attack_name, x_adv in zip(attack_name_list, x_adv_list):
+				print "RUNNING {}".format(attack_name)
 				adv = sess.run(x_adv, feed_dict={x:batch_data})
 				generated_adversarial_images[attack_name] = adv
-				########################################################################################
 				print "adv stats", np.mean(batch_data),  np.mean(adv), np.mean(batch_data - adv), np.std(batch_data - adv) ####
-
-				########################################################################################
 
 
 
