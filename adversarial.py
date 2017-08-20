@@ -53,27 +53,38 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 	# attack_kwargs_list = [{"nb_classes":1000, "learning_rate":1e-2, "max_iterations":100}, {}, {}]
 
 
-	attack_methods = [CarliniWagnerL2, FastGradientMethod, BasicIterativeMethod]#, VirtualAdversarialMethod]
-	attack_name_list = ["CarliniWagnerL2", "FastGradientMethod", "BasicIterativeMethod"]#, "VirtualAdversarialMethod"]
-	attack_kwargs_list = [{"nb_classes":1000, "learning_rate":8e-2, 'initial_const':1e-1, "max_iterations":100}, {"eps":0.05}, {"eps":0.05}]
-
-	attack_methods = attack_methods[1:]
-	attack_name_list = attack_name_list[1:]
-	attack_kwargs_list = attack_kwargs_list[1:]
-
-	# attack_methods += [FastGradientMethod, BasicIterativeMethod]
-	# attack_name_list += ["FastGradientMethod_{}".format(e), "BasicIterativeMethod_{}".format(e)]
-	# attack_kwargs_list += [{"eps":eps}, {"eps":eps}]
+	# attack_methods = [CarliniWagnerL2, FastGradientMethod, BasicIterativeMethod]#, VirtualAdversarialMethod]
+	# attack_name_list = ["CarliniWagnerL2", "FastGradientMethod", "BasicIterativeMethod"]#, "VirtualAdversarialMethod"]
+	# attack_kwargs_list = [{"nb_classes":1000, "learning_rate":8e-2, 'initial_const':1e-1, "max_iterations":100}, {"eps":0.05}, {"eps":0.05}]
 
 
+	attack_methods = []#[CarliniWagnerL2]
+	attack_name_list = []#["CarliniWagnerL2"]
+	attack_kwargs_list = []#[{"nb_classes":1000, "learning_rate":8e-2, 'initial_const':1e-1, "max_iterations":100}]
+
+
+	for eps in [0.01, 0.03, 0.05, 0.1]:
+		attack_methods += [FastGradientMethod, BasicIterativeMethod]
+		attack_name_list += ["FastGradientMethod_{}".format(eps), "BasicIterativeMethod_{}".format(eps)]
+		attack_kwargs_list += [{"eps":eps}, {"eps":eps}]
+
+	assert len(attack_kwargs_list) == len(attack_methods) and len(attack_methods) == len(attack_name_list)
+	print attack_name_list
 	# attack_methods += [CarliniWagnerL2]
 	# attack_name_list += ["CarliniWagnerL2"]
 	# attack_kwargs_list += [{}]
 
 	# print attack_name_list
-	# attack_methods = attack_methods[:2]
-	# attack_name_list = attack_name_list[:2]
-	# attack_kwargs_list = attack_kwargs_list[:2]
+	# attack_methods = attack_methods[:1]
+	# attack_name_list = attack_name_list[:1]
+	# attack_kwargs_list = attack_kwargs_list[:1]
+
+
+
+
+
+
+
 
 
 	x_adv_list = []
@@ -115,9 +126,12 @@ def generate_adversarial_images(saved_weights_path, model_kind):
 
 		# Load the fast gradient computation graph
 		for attack_method, kwargs in zip(attack_methods, attack_kwargs_list):	
+			print "loading graph for {}".format(attack_method)
 			attack  = attack_method(model, sess=sess)
+			print "attacked created! generating..."
 			x_adv = attack.generate(x, **kwargs) 
 			x_adv_list.append(x_adv)
+			print "generated!\n"
 
 		# Load the saved weights and initialize the tensorflow graph
 		if model_kind == "vgg":

@@ -24,10 +24,20 @@ import tensorflow_helpers as tfhf
 import pickledb
 from adversarial import generate_adversarial_images
 from test_adversarial import test_adversarial_performance
-
+from ops.tf_fun import get_most_recent
 saved_weights_paths = [
-# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_1e-05_1283163_2017_08_13_19_46_01_1502667961/model_20000.ckpt-20000",
-"/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/baseline_0.0001_1283163_2017_08_16_12_09_55_1502899794/model_4000.ckpt-4000"
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_1283163_2017_08_17_16_48_33_1503002913",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_1283163_2017_08_17_17_07_11_1503004031",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_1283163_2017_08_17_17_02_11_1503003728",
+# "/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/attngrad_0.0001_1283163_2017_08_14_20_23_59_1502756638",
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_1283163_2017_08_16_21_39_34_1502933973",  
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_1283163_2017_08_16_21_39_06_1502933940",  
+# "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_1283163_2017_08_16_21_39_14_1502933952",  
+"/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/baseline_0.0001_1283163_2017_08_16_12_09_55_1502899794",
+
+
+# "/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/attngrad_0.0001_1283163_2017_08_14_20_23_59_1502756638/model_108000.ckpt-108000",
+# "/media/data_cifs/clicktionary/clickme_experiment/_checkpoints/baseline_0.0001_1283163_2017_08_16_12_09_55_1502899794/model_26000.ckpt-26000"
 # "/media/cifs_all/charlie/clickme/baseline_inception_checkpoints/inception_v3.ckpt",
 # "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_28_03_06_10/model_268000.ckpt-268000",
 # "/media/data_cifs/clicktionary/clickme_experiment/attngrad_inception_checkpoints/attngrad_0.0001_144023_2017_07_27_21_21_30/model_284000.ckpt-284000",
@@ -59,7 +69,9 @@ saved_weights_paths = [
 model_kinds = ["inception"]*8 #+ ["vgg"]*4
 
 
-for swp, mk in zip(saved_weights_paths, model_kinds):
+for directory, mk in zip(saved_weights_paths, model_kinds):
+	most_recent = get_most_recent(directory)
+	swp = "{}/{}".format(directory, most_recent)
 	print "\n\n USING {}\n\n".format(swp)
 	signature = generate_adversarial_images(swp, mk)
 	test_adversarial_performance(signature)

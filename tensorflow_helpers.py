@@ -60,9 +60,8 @@ def initialize_session_vgg(saved_weights_path, vars=None):
 	return sess
 
 def inception_model(x, saved_weights_path):
-	inception_kwargs = {'num_classes':1000} if "baseline" in saved_weights_path else {}
 	with tf.contrib.slim.arg_scope(inception.inception_v3_arg_scope()):
-		logits, _ = inception.inception_v3(inception_input_processing(x), is_training=False, **inception_kwargs)
+		logits, _ = inception.inception_v3(inception_input_processing(x), is_training=True, dropout_keep_prob=1)
 	return logits
 
 def initialize_session_inception(saved_weights_path, sess=None):
@@ -78,24 +77,9 @@ def initialize_session_inception(saved_weights_path, sess=None):
 
 	# Load the saved weights
 	if saved_weights_path:
-		print "restoring {}".format(saved_weights_path)
-		# Figure out which variables to restore from the baseline model and which to restore from the new trained model
-		# baseline_vars = []
-		# tvars = tf.trainable_variables()#tf.contrib.slim.get_model_variables()
-
-		tvars = tf.contrib.slim.get_model_variables()
-		# for tv in tvars:
-		# 	print tv
-		# for var in tf.contrib.slim.get_model_variables():
-		# 	if not any(map(lambda x: var.op.name.startswith(x), exclude_scopes)):
-		# 		baseline_vars.append(var)
-		# 	else:
-		# 		trained_vars.append(var)
-		# restore the variables from the baseline model
-		# restorer = tf.train.Saver(baseline_vars)
-		# restorer.restore(sess, incfg.pretrained_ckpt)	
-		# restore the attention saved models
-		saver = tf.train.Saver(tvars)
+		print "restoring {}...".format(saved_weights_path)
+		saver = tf.train.Saver(tf.contrib.slim.get_model_variables())
 		saver.restore(sess, saved_weights_path)	
+		print "restored!"
 	return sess
 
